@@ -1,6 +1,6 @@
 # WD (Workstation Diary)
 
-[English](/README.md) | [日本語](/README.md_ja.md)
+[English](/README.md) | [日本語](/README_ja.md)
 
 
 
