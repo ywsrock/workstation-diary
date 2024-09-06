@@ -1,6 +1,7 @@
+# WD (Workstation Diary)
+
 [English](/README.md) | [日本語](/README.md_ja.md)
 
-<a name="english" href="/README.md"></a>
 
 
 WDは、ノートを効率的に管理・整理するためのコマンドラインツールです。ターミナルから直接マークダウンノートの作成、編集、検索、管理を行うためのシンプルなインターフェースを提供します。
@@ -19,7 +20,7 @@ WDは、ノートを効率的に管理・整理するためのコマンドライ
 
 1. リポジトリをクローンします：
    ```
-   git clone https://github.com/yourusername/wd.git
+    git clone git@github.com:ywsrock/workstation-diary.git
    ```
 
 2. 以下の行を `~/.bashrc` または `~/.zshrc` に追加します：

@@ -1,6 +1,7 @@
-[English](#english) | [日本語](#日本語)
+# WD (Workstation Diary)
 
-<a name="日本語" herf="/README_ja.md"></a>
+[English](/README.md) | [日本語](/README.md_ja.md)
+
 
 
 WD is a command-line tool for managing and organizing your notes efficiently. It provides a simple interface for creating, editing, searching, and managing markdown notes directly from your terminal.
@@ -19,7 +20,7 @@ WD is a command-line tool for managing and organizing your notes efficiently. It
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/wd.git
+    git clone git@github.com:ywsrock/workstation-diary.git
    ```
 
 2. Add the following line to your `~/.bashrc` or `~/.zshrc`:
