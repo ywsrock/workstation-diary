@@ -111,6 +111,20 @@ wd() {
         done
     }
 
+    # Function to sync notes with a remote using rclone
+    sync_with_rclone() {
+        local remote="$1"
+        local remote_path="$2"
+
+        if ! command -v rclone &> /dev/null; then
+            echo "rclone is not installed. Please install it to use cloud sync."
+            return 1
+        fi
+
+        rclone copy --update --verbose "$notes_dir" "$remote:$remote_path"
+        echo "Synced notes to $remote (only updated or new files, no deletions)."
+    }
+
     case "$1" in
         add)
             if [ -z "$2" ]; then
@@ -240,6 +254,25 @@ wd() {
                 echo "No file selected."
             fi
             ;;
+        sync)
+            case "$2" in
+                gdrive)
+                    sync_with_rclone "gdrive" "WDNotes"
+                    ;;
+                s3)
+                    if [ -z "$WD_S3_BUCKET" ]; then
+                        echo "Please set the WD_S3_BUCKET environment variable."
+                        return 1
+                    fi
+                    sync_with_rclone "s3" "$WD_S3_BUCKET/notes"
+                    ;;
+                *)
+                    echo "Usage: wd sync [gdrive|s3]"
+                    echo "Make sure you have configured rclone for the chosen remote."
+                    echo "This will only update or add files, not delete any in the destination."
+                    ;;
+            esac
+            ;;
         config)
             echo "Current notes directory: $notes_dir"
             echo "To change the directory, set the WD_NOTES_DIR environment variable."
@@ -258,6 +291,7 @@ wd() {
             echo "  tag [note_name]        - View or edit tags of a note (interactive selection if no name provided)"
             echo "  tag search <tag_name>  - Search notes by tag"
             echo "  recent [count]         - Show and select from recent notes (default: 5)"
+            echo "  sync [gdrive|s3]       - Safely sync notes with Google Drive or AWS S3 using rclone (no deletions)"
             echo "  config                 - Show current configuration"
             echo "  help                   - Show this help message"
             echo
