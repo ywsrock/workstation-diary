@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📓 WD — Workstation Diary
+# WD — Workstation Diary
 
 **ターミナルを、そのままノートに。**
 アイデア・作業ログ・TODO を、シェルから離れずに Markdown で記録。
@@ -24,7 +24,7 @@ $ wd grep "timeout" -f                   # 全ノートをあいまい検索＆�
 $ wd sync gdrive                         # Google Drive にまとめてバックアップ
 ```
 
-## ✨ WD の魅力
+## WD の魅力
 
 - **手間ゼロ** — シェル関数ひとつだけ。デーモンもDBも専用アプリも不要。`wd add` ですぐ書き始められます。
 - **ずっと使えるプレーンな Markdown** — ノートは YAML フロントマター付きの `.md` ファイル。grep も Git 管理も、Obsidian や VS Code で開くのも自由。ロックインなし。
@@ -32,7 +32,7 @@ $ wd sync gdrive                         # Google Drive にまとめてバック
 - **安全なバックアップ** — [rclone](https://rclone.org/) で Google Drive / AWS S3 へ送信。追加・更新のみで、リモートのファイルは決して削除しません。
 - **環境を選ばない** — fzf がなければ番号選択メニュー、bat がなければ `head` で表示。そのまま動きます。
 
-## 🚀 クイックスタート
+## クイックスタート
 
 ```bash
 # 1. クローン
@@ -54,7 +54,7 @@ wd add "Hello WD" first
 > brew install fzf bat rclone   # macOS
 > ```
 
-## 📝 ノートの中身
+## ノートの中身
 
 `wd add "ログインバグ修正" 仕事 緊急` を実行すると、一意な名前のファイルが作られます：
 
@@ -76,7 +76,7 @@ tags: 仕事 緊急
 
 ファイル名が日時から始まるので、どのファイルブラウザでも時系列順に並びます。
 
-## 🧭 コマンド一覧
+## コマンド一覧
 
 | コマンド | 説明 |
 | --- | --- |
@@ -97,7 +97,7 @@ tags: 仕事 緊急
 > `[名前]` はファイルパスに対して大文字小文字を区別せずに部分一致します。`wd open ログイン` のようにタイトルの一部だけで OK です。
 
 <details>
-<summary><b>📖 コマンドの詳細と使用例</b></summary>
+<summary><b>コマンドの詳細と使用例</b></summary>
 
 ### `add`
 ```bash
@@ -140,7 +140,7 @@ wd tag search 仕事     # 「仕事」タグの付いたノートを一覧表�
 
 </details>
 
-## ☁️ rclone によるクラウドバックアップ
+## rclone によるクラウドバックアップ
 
 `wd sync` は `rclone copy --update` を実行し、**新規・更新されたノートだけをアップロード**します。リモート側のファイルは削除しません。このマシンからの一方向バックアップです。
 
@@ -161,7 +161,7 @@ export WD_S3_BUCKET="my-bucket"
 wd sync s3
 ```
 
-## ⚙️ 設定
+## 設定
 
 | 環境変数 | デフォルト | 説明 |
 | --- | --- | --- |
@@ -175,24 +175,24 @@ export WD_S3_BUCKET="my-bucket"
 source ~/workstation-diary/sh/wd.sh
 ```
 
-## 📦 動作要件
+## 動作要件
 
 | ツール | 必須? | 用途 |
 | --- | --- | --- |
-| Bash または Zsh | ✅ | `wd` の実行 |
-| `find`, `grep`, `sed` | ✅ | 一覧表示・検索 |
-| `openssl` | ✅ | 一意なファイル名の生成 |
-| `nvim` / `vim` / `nano` | ✅（いずれか） | ノートの編集 |
+| Bash または Zsh | 必須 | `wd` の実行 |
+| `find`, `grep`, `sed` | 必須 | 一覧表示・検索 |
+| `openssl` | 必須 | 一意なファイル名の生成 |
+| `nvim` / `vim` / `nano` | 必須（いずれか） | ノートの編集 |
 | [fzf](https://github.com/junegunn/fzf) | 任意 | 対話的なあいまい選択 |
 | [bat](https://github.com/sharkdp/bat) | 任意 | ハイライト付きプレビュー |
 | [rclone](https://rclone.org/) | 任意 | `wd sync` |
 
-## 💡 Tips
+## Tips
 
 - **日報:** `alias today='wd add "daily-$(date +%F)" daily'`
 - **ノートをバージョン管理:** `$WD_NOTES_DIR` で `git init` すれば履歴を残せます。
 - **共有フォルダ:** `WD_NOTES_DIR` を Dropbox / iCloud のフォルダに向ければ、複数端末からリアルタイムに使えます。
 
-## 📄 ライセンス
+## ライセンス
 
 [MIT](LICENSE) © ywsrock

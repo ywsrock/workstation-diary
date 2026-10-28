@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📓 WD — Workstation Diary
+# WD — Workstation Diary
 
 **Your terminal is your notebook.**
 Capture ideas, logs, and TODOs as Markdown — without ever leaving the shell.
@@ -24,7 +24,7 @@ $ wd grep "timeout" -f                   # fuzzy-search every note, with live pr
 $ wd sync gdrive                         # back it all up to Google Drive
 ```
 
-## ✨ Why WD?
+## Why WD?
 
 - **Zero friction** — one shell function, no daemon, no database, no app to open. `wd add` and you're writing.
 - **Plain Markdown, forever** — every note is a `.md` file with YAML front matter. Grep it, version it, open it in Obsidian or VS Code. No lock-in.
@@ -32,7 +32,7 @@ $ wd sync gdrive                         # back it all up to Google Drive
 - **Safe backups** — push notes to Google Drive or AWS S3 via [rclone](https://rclone.org/). Sync only adds or updates; it never deletes anything on the remote.
 - **Degrades gracefully** — no fzf? You get a numbered `select` menu. No bat? Plain `head`. It just works.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # 1. Clone
@@ -54,7 +54,7 @@ Notes are stored in `~/notes` by default (created automatically).
 > brew install fzf bat rclone   # macOS
 > ```
 
-## 📝 What a Note Looks Like
+## What a Note Looks Like
 
 `wd add "Fix login bug" work urgent` creates a uniquely named file:
 
@@ -76,7 +76,7 @@ tags: work urgent
 
 Because the date and time lead the filename, notes sort chronologically in any file browser.
 
-## 🧭 Commands
+## Commands
 
 | Command | What it does |
 | --- | --- |
@@ -97,7 +97,7 @@ Because the date and time lead the filename, notes sort chronologically in any f
 > `[name]` matches case-insensitively against the file path, so a partial title like `wd open login` is enough.
 
 <details>
-<summary><b>📖 Command details & examples</b></summary>
+<summary><b>Command details & examples</b></summary>
 
 ### `add`
 ```bash
@@ -140,7 +140,7 @@ wd tag search work    # list every note tagged "work"
 
 </details>
 
-## ☁️ Cloud Backup with rclone
+## Cloud Backup with rclone
 
 `wd sync` runs `rclone copy --update`, which **uploads new and changed notes only** and never deletes files on the remote. It is a one-way backup from this machine.
 
@@ -161,7 +161,7 @@ export WD_S3_BUCKET="my-bucket"
 wd sync s3
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 | Variable | Default | Description |
 | --- | --- | --- |
@@ -175,24 +175,24 @@ export WD_S3_BUCKET="my-bucket"
 source ~/workstation-diary/sh/wd.sh
 ```
 
-## 📦 Requirements
+## Requirements
 
 | Tool | Required? | Used for |
 | --- | --- | --- |
-| Bash or Zsh | ✅ | Running `wd` |
-| `find`, `grep`, `sed` | ✅ | Listing and searching |
-| `openssl` | ✅ | Unique filename generation |
-| `nvim` / `vim` / `nano` | ✅ (any one) | Editing notes |
+| Bash or Zsh | Yes | Running `wd` |
+| `find`, `grep`, `sed` | Yes | Listing and searching |
+| `openssl` | Yes | Unique filename generation |
+| `nvim` / `vim` / `nano` | Yes (any one) | Editing notes |
 | [fzf](https://github.com/junegunn/fzf) | Optional | Interactive fuzzy selection |
 | [bat](https://github.com/sharkdp/bat) | Optional | Syntax-highlighted previews |
 | [rclone](https://rclone.org/) | Optional | `wd sync` |
 
-## 💡 Tips
+## Tips
 
 - **Daily log:** `alias today='wd add "daily-$(date +%F)" daily'`
 - **Version your notes:** run `git init` inside `$WD_NOTES_DIR` for full history.
 - **Shared folder:** point `WD_NOTES_DIR` at a Dropbox/iCloud folder for live multi-device access.
 
-## 📄 License
+## License
 
 [MIT](LICENSE) © ywsrock
