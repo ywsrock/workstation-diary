@@ -1,47 +1,69 @@
-# WD (Workstation Diary)
+<div align="center">
+
+# WD — Workstation Diary
+
+**ターミナルを、そのままノートに。**
+アイデア・作業ログ・TODO を、シェルから離れずに Markdown で記録。
+
+![Shell](https://img.shields.io/badge/shell-bash%20%7C%20zsh-4EAA25?logo=gnubash&logoColor=white)
+![Markdown](https://img.shields.io/badge/notes-Markdown-000000?logo=markdown)
+![fzf](https://img.shields.io/badge/works%20great%20with-fzf-blueviolet)
+![rclone](https://img.shields.io/badge/backup-rclone-3F79AD)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 [English](README.md) | [日本語](README_ja.md)
 
-ターミナルからメモを書いたり探したりするための、小さなシェル関数です。
+</div>
 
-メモはひとつのディレクトリに置かれた普通の Markdown ファイルなので、好きなエディタで開いたり、grep したり、Git で管理したりできます。WD がやるのは、ファイル名を付ける、ヘッダーを書く、目的のメモにすぐ戻る、といった面倒な部分だけです。
+---
 
 ```console
-$ wd add "ログインバグ修正" 仕事 緊急
-$ wd recent
-$ wd grep timeout -f
-$ wd sync gdrive
+$ wd add "ログインバグ修正" 仕事 緊急    # 新しいノートをエディタで開く
+$ wd recent                              # 直前の作業にすぐ戻る
+$ wd grep "timeout" -f                   # 全ノートをあいまい検索＆ライブプレビュー
+$ wd sync gdrive                         # Google Drive にまとめてバックアップ
 ```
 
-## インストール
+## WD の魅力
+
+- **手間ゼロ** — シェル関数ひとつだけ。デーモンもDBも専用アプリも不要。`wd add` ですぐ書き始められます。
+- **ずっと使えるプレーンな Markdown** — ノートは YAML フロントマター付きの `.md` ファイル。grep も Git 管理も、Obsidian や VS Code で開くのも自由。ロックインなし。
+- **すぐ見つかる** — 正規表現の全文検索、タグ検索、最近のノート。[fzf](https://github.com/junegunn/fzf) による対話的な選択と [bat](https://github.com/sharkdp/bat) のシンタックスハイライト付きプレビューに対応。
+- **安全なバックアップ** — [rclone](https://rclone.org/) で Google Drive / AWS S3 へ送信。追加・更新のみで、リモートのファイルは決して削除しません。
+- **環境を選ばない** — fzf がなければ番号選択メニュー、bat がなければ `head` で表示。そのまま動きます。
+
+## クイックスタート
 
 ```bash
+# 1. クローン
 git clone git@github.com:ywsrock/workstation-diary.git ~/workstation-diary
-echo 'source ~/workstation-diary/sh/wd.sh' >> ~/.zshrc   # bash の場合は ~/.bashrc
+
+# 2. シェルに wd 関数を読み込む（~/.zshrc または ~/.bashrc）
+echo 'source ~/workstation-diary/sh/wd.sh' >> ~/.zshrc
+
+# 3. 再読み込みして最初のノートを作成
 source ~/.zshrc
+wd add "Hello WD" first
 ```
 
-メモはデフォルトで `~/notes` に保存されます。ディレクトリは初回実行時に作られます。
+ノートはデフォルトで `~/notes` に保存されます（自動作成）。
 
-fzf、bat、rclone はなくても動きますが、fzf と bat があるとかなり使いやすくなります。
+> [!TIP]
+> オプションのツールを入れると、さらに快適になります：
+> ```bash
+> brew install fzf bat rclone   # macOS
+> ```
 
-```bash
-brew install fzf bat rclone
-```
+## ノートの中身
 
-fzf がない場合は番号で選ぶメニューになり、bat がない場合はプレビューが普通のテキスト表示になります。
-
-## メモの形式
-
-`wd add "ログインバグ修正" 仕事 緊急` を実行すると、次のようなファイルができます。
+`wd add "ログインバグ修正" 仕事 緊急` を実行すると、一意な名前のファイルが作られます：
 
 ```
 ~/notes/20261028_142305_a1b2c3d4_ログインバグ修正.md
+        └─日付─┘ └時刻┘ └ランダム┘ └─タイトル─┘
 ```
 
-ファイル名は「日付_時刻_ランダムな文字列_タイトル」です。日付から始まるので、普通に `ls` するだけで書いた順に並びます。
-
-ファイルの先頭には簡単なヘッダーが入り、そのままエディタ（nvim、vim、nano のうち最初に見つかったもの）で開きます。
+以下のフロントマターが書き込まれ、エディタ（`nvim` → `vim` → `nano` の順で最初に見つかったもの）で開きます：
 
 ```markdown
 ---
@@ -49,88 +71,128 @@ title: ログインバグ修正
 date: 20261028
 tags: 仕事 緊急
 ---
+
 ```
 
-## コマンド
+ファイル名が日時から始まるので、どのファイルブラウザでも時系列順に並びます。
+
+## コマンド一覧
 
 | コマンド | 説明 |
 | --- | --- |
-| `wd add <名前> [タグ...]` | メモを作成して開く |
-| `wd open [名前]` | メモを開く |
-| `wd list [キーワード]` | メモを一覧表示（キーワードで絞り込み可）して開く |
-| `wd recent [件数]` | 最近更新したメモから選んで開く（デフォルト 5 件） |
-| `wd preview [名前]` | メモの先頭 50 行を表示 |
-| `wd search <正規表現>` | 全メモを正規表現で検索 |
-| `wd grep <キーワード> [-f]` | 大文字小文字を区別せずに検索。`-f` で fzf から選択 |
-| `wd tag [名前]` | タグを表示・変更 |
-| `wd tag search <タグ>` | タグでメモを探す |
-| `wd delete [名前]` | メモを削除（確認あり） |
-| `wd sync <gdrive\|s3>` | rclone でバックアップ |
-| `wd config` | 保存先ディレクトリを表示 |
-| `wd help [コマンド]` | ヘルプを表示 |
+| `wd add <名前> [タグ...]` | フロントマター付きのノートを作成して開く |
+| `wd open [名前]` | ノートを開く（名前省略時は対話的に選択） |
+| `wd list [キーワード]` | ノート一覧（内容で絞り込み可）から選んで開く |
+| `wd recent [件数]` | 最近更新したノートから選んで開く（デフォルト: 5件） |
+| `wd preview [名前]` | ノートの先頭50行を表示 |
+| `wd search <正規表現>` | 全ノートを正規表現で検索（fzf があれば自動で使用） |
+| `wd grep <キーワード> [-f]` | 大文字小文字を区別しない検索。`-f` で fzf を使用 |
+| `wd tag [名前]` | ノートのタグを表示・編集 |
+| `wd tag search <タグ>` | 指定タグを持つノートを検索 |
+| `wd delete [名前]` | ノートを削除（確認あり） |
+| `wd sync <gdrive\|s3>` | rclone でバックアップ（リモート側の削除なし） |
+| `wd config` | 現在のノートディレクトリを表示 |
+| `wd help [コマンド]` | ヘルプを表示（コマンド指定で詳細） |
 
-`[名前]` を取るコマンドは、タイトルの一部だけで大丈夫です（`wd open ログイン` など）。大文字小文字も区別しません。複数のメモが当てはまった場合は、どれを使うか聞かれます。名前を省略すると、全メモの一覧から選べます。
+> `[名前]` はファイルパスに対して大文字小文字を区別せずに部分一致します。`wd open ログイン` のようにタイトルの一部だけで OK です。
 
-使用例:
+<details>
+<summary><b>コマンドの詳細と使用例</b></summary>
 
+### `add`
 ```bash
-wd open                    # 全メモから選ぶ
-wd list プロジェクト       # 「プロジェクト」を含むメモ
-wd recent 10               # 直近 10 件
-wd search "TODO.*緊急"     # 正規表現（大文字小文字を区別）
-wd grep 重要 -f            # fzf で選択、該当行からプレビュー
-wd tag search 仕事         # 「仕事」タグの付いたメモ
+wd add "会議メモ" 仕事 会議
+```
+タイトル「会議メモ」、タグ `仕事 会議` のノートを作成します。
+
+### `open` / `preview` / `delete`
+```bash
+wd open "会議"        # 名前の一部で開く
+wd open               # 対話的に選択
+wd preview 会議       # 先頭50行を表示（bat があればハイライト付き）
+wd delete "古いノート" # y/n で確認してから削除
 ```
 
-## バックアップ
+### `list`
+```bash
+wd list                # すべてのノート
+wd list プロジェクト   # 本文に「プロジェクト」を含むノートのみ
+```
 
-`wd sync` は `rclone copy --update` でメモをアップロードします。送られるのは新しいファイルと変更されたファイルだけで、リモート側のファイルが削除されることはありません。アップロードのみの一方向のバックアップで、リモートの変更を取り込むことはしません。
+### `recent`
+```bash
+wd recent       # 直近5件
+wd recent 10    # 直近10件
+```
 
-先に `rclone config` でリモートを設定しておいてください。リモート名は次のように決まっています。
+### `search` と `grep` の違い
+```bash
+wd search "TODO.*緊急"   # 正規表現・大文字小文字を区別、fzf があれば自動で使用
+wd grep 重要             # 大文字小文字を区別しない、色付き出力
+wd grep 重要 -f          # 同上を fzf で。該当行からプレビュー
+```
 
-| コマンド | rclone のリモート名 | アップロード先 |
+### `tag`
+```bash
+wd tag "会議"          # 現在のタグを表示し、新しいタグを入力
+wd tag search 仕事     # 「仕事」タグの付いたノートを一覧表示
+```
+
+</details>
+
+## rclone によるクラウドバックアップ
+
+`wd sync` は `rclone copy --update` を実行し、**新規・更新されたノートだけをアップロード**します。リモート側のファイルは削除しません。このマシンからの一方向バックアップです。
+
+| 送信先 | 必要な rclone リモート名 | 保存先 |
 | --- | --- | --- |
-| `wd sync gdrive` | `gdrive` | `gdrive:WDNotes` |
-| `wd sync s3` | `s3` | `s3:$WD_S3_BUCKET/notes` |
-
-S3 を使う場合は、バケット名を設定します。
+| Google Drive | `gdrive` | `gdrive:WDNotes` |
+| AWS S3 | `s3` | `s3:$WD_S3_BUCKET/notes` |
 
 ```bash
+# 初回のみ: "gdrive"（または "s3"）という名前のリモートを作成
+rclone config
+
+# Google Drive
+wd sync gdrive
+
+# AWS S3
 export WD_S3_BUCKET="my-bucket"
 wd sync s3
 ```
 
 ## 設定
 
-| 環境変数 | デフォルト | |
+| 環境変数 | デフォルト | 説明 |
 | --- | --- | --- |
-| `WD_NOTES_DIR` | `$HOME/notes` | メモの保存先 |
-| `WD_S3_BUCKET` | （なし） | `wd sync s3` で使うバケット |
-
-シェルの設定ファイルで、`source` の行より前に書いてください。
+| `WD_NOTES_DIR` | `$HOME/notes` | ノートの保存先 |
+| `WD_S3_BUCKET` | — | `wd sync s3` で使う S3 バケット |
 
 ```bash
+# ~/.zshrc
 export WD_NOTES_DIR="$HOME/Dropbox/notes"
+export WD_S3_BUCKET="my-bucket"
 source ~/workstation-diary/sh/wd.sh
 ```
 
-## 動作環境
+## 動作要件
 
-- Bash または Zsh
-- `find`、`grep`、`sed`、`openssl`（macOS やたいていの Linux には最初から入っています）
-- nvim、vim、nano のいずれか
-- 任意: [fzf](https://github.com/junegunn/fzf)、[bat](https://github.com/sharkdp/bat)、[rclone](https://rclone.org/)
+| ツール | 必須? | 用途 |
+| --- | --- | --- |
+| Bash または Zsh | 必須 | `wd` の実行 |
+| `find`, `grep`, `sed` | 必須 | 一覧表示・検索 |
+| `openssl` | 必須 | 一意なファイル名の生成 |
+| `nvim` / `vim` / `nano` | 必須（いずれか） | ノートの編集 |
+| [fzf](https://github.com/junegunn/fzf) | 任意 | 対話的なあいまい選択 |
+| [bat](https://github.com/sharkdp/bat) | 任意 | ハイライト付きプレビュー |
+| [rclone](https://rclone.org/) | 任意 | `wd sync` |
 
 ## Tips
 
-日報用のエイリアスを作っておくと便利です。
-
-```bash
-alias today='wd add "daily-$(date +%F)" daily'
-```
-
-メモの履歴を残したい場合は、保存先ディレクトリで `git init` してください。複数のマシンで同時に使いたい場合は、`WD_NOTES_DIR` を Dropbox や iCloud のフォルダにすると簡単です。
+- **日報:** `alias today='wd add "daily-$(date +%F)" daily'`
+- **ノートをバージョン管理:** `$WD_NOTES_DIR` で `git init` すれば履歴を残せます。
+- **共有フォルダ:** `WD_NOTES_DIR` を Dropbox / iCloud のフォルダに向ければ、複数端末からリアルタイムに使えます。
 
 ## ライセンス
 
-MIT ライセンスです。詳しくは [LICENSE](LICENSE) を見てください。
+[MIT](LICENSE) © ywsrock
