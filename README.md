@@ -1,231 +1,198 @@
-# WD (Workstation Diary)
+<div align="center">
 
-[English](/README.md) | [日本語](/README_ja.md)
+# 📓 WD — Workstation Diary
 
+**Your terminal is your notebook.**
+Capture ideas, logs, and TODOs as Markdown — without ever leaving the shell.
 
+![Shell](https://img.shields.io/badge/shell-bash%20%7C%20zsh-4EAA25?logo=gnubash&logoColor=white)
+![Markdown](https://img.shields.io/badge/notes-Markdown-000000?logo=markdown)
+![fzf](https://img.shields.io/badge/works%20great%20with-fzf-blueviolet)
+![rclone](https://img.shields.io/badge/backup-rclone-3F79AD)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-WD is a command-line tool for managing and organizing your notes efficiently. It provides a simple interface for creating, editing, searching, and managing markdown notes directly from your terminal.
+[English](README.md) | [日本語](README_ja.md)
 
-### Features
+</div>
 
-- Create and edit notes with automatic timestamps and tags
-- List and search notes with interactive selection
-- Delete notes with confirmation
-- Preview note contents
-- Search notes by content or tags
-- Configure notes directory through environment variables
-- Support for fzf for enhanced file selection (if installed)
+---
 
-### Installation
-
-1. Clone the repository:
-   ```
-    git clone git@github.com:ywsrock/workstation-diary.git
-   ```
-
-2. Add the following line to your `~/.bashrc` or `~/.zshrc`:
-   ```bash
-   source /path/to/wd.sh
-   ```
-
-3. Reload your shell configuration:
-   ```
-   source ~/.bashrc  # or source ~/.zshrc
-   ```
-
-4. (Optional) Set a custom notes directory by adding the following line to your shell configuration:
-   ```bash
-   export WD_NOTES_DIR="/path/to/your/notes/directory"
-   ```
-
-### Usage
-
-WD provides several commands for managing your notes. Here's a quick overview:
-
-```
-wd <command> [args]
+```console
+$ wd add "Fix login bug" work urgent     # opens a new note in your editor
+$ wd recent                              # jump back into what you were doing
+$ wd grep "timeout" -f                   # fuzzy-search every note, with live preview
+$ wd sync gdrive                         # back it all up to Google Drive
 ```
 
-#### Commands
+## ✨ Why WD?
 
-- `add <note_name> [tags]`: Add a new note
-- `list [keyword]`: List all notes or search by keyword, then select to open
-- `delete [note_name]`: Delete a note (interactive selection if no name provided)
-- `open [note_name]`: Open a note (interactive selection if no name provided)
-- `search <regex_pattern>`: Search within notes using regex
-- `grep <keyword> [-f]`: Grep for keyword in all notes (use -f for fzf)
-- `preview [note_name]`: Preview a note (interactive selection if no name provided)
-- `tag [note_name]`: View or edit tags of a note (interactive selection if no name provided)
-- `tag search <tag_name>`: Search notes by tag
-- `recent [count]`: Show and select from recent notes (default: 5)
-- `config`: Show current configuration
-- `help`: Show help message
+- **Zero friction** — one shell function, no daemon, no database, no app to open. `wd add` and you're writing.
+- **Plain Markdown, forever** — every note is a `.md` file with YAML front matter. Grep it, version it, open it in Obsidian or VS Code. No lock-in.
+- **Find anything fast** — full-text regex search, tag search, and recent notes, with an interactive [fzf](https://github.com/junegunn/fzf) picker and [bat](https://github.com/sharkdp/bat) syntax-highlighted previews.
+- **Safe backups** — push notes to Google Drive or AWS S3 via [rclone](https://rclone.org/). Sync only adds or updates; it never deletes anything on the remote.
+- **Degrades gracefully** — no fzf? You get a numbered `select` menu. No bat? Plain `head`. It just works.
 
-### Detailed Command Descriptions
-
-#### add
-
-Create a new note with a given name and optional tags.
-
-```
-wd add <note_name> [tags]
-```
-
-Example:
-```
-wd add "My New Note" work important
-```
-
-This creates a new note with the title "My New Note" and tags "work" and "important".
-
-#### list
-
-List all notes or search by keyword. If a keyword is provided, it will filter the notes. You can then select a note to open.
-
-```
-wd list [keyword]
-```
-
-Example:
-```
-wd list
-wd list project
-```
-
-#### delete
-
-Delete a note. If no name is provided, it will prompt you to select a note to delete.
-
-```
-wd delete [note_name]
-```
-
-Example:
-```
-wd delete "My Old Note"
-```
-
-#### open
-
-Open a note for editing. If no name is provided, it will prompt you to select a note to open.
-
-```
-wd open [note_name]
-```
-
-Example:
-```
-wd open "My Note"
-```
-
-#### search
-
-Search within notes using a regex pattern.
-
-```
-wd search <regex_pattern>
-```
-
-Example:
-```
-wd search "TODO.*urgent"
-```
-
-#### grep
-
-Search for a keyword in all notes. Use the `-f` flag to use fzf for interactive selection (if fzf is installed).
-
-```
-wd grep <keyword> [-f]
-```
-
-Example:
-```
-wd grep important -f
-```
-
-#### preview
-
-Preview the contents of a note. If no name is provided, it will prompt you to select a note to preview.
-
-```
-wd preview [note_name]
-```
-
-Example:
-```
-wd preview "My Note"
-```
-
-#### tag
-
-View or edit tags of a note. If no name is provided, it will prompt you to select a note.
-
-```
-wd tag [note_name]
-```
-
-Example:
-```
-wd tag "My Note"
-```
-
-#### tag search
-
-Search notes by tag.
-
-```
-wd tag search <tag_name>
-```
-
-Example:
-```
-wd tag search work
-```
-
-#### recent
-
-Show and select from recent notes. You can specify the number of recent notes to show (default is 5).
-
-```
-wd recent [count]
-```
-
-Example:
-```
-wd recent 10
-```
-
-#### config
-
-Show the current configuration, including the notes directory.
-
-```
-wd config
-```
-
-#### help
-
-Display the help message with a list of all available commands.
-
-```
-wd help
-```
-
-### Configuration
-
-You can set a custom notes directory by setting the `WD_NOTES_DIR` environment variable:
+## 🚀 Quick Start
 
 ```bash
-export WD_NOTES_DIR="/path/to/your/notes/directory"
+# 1. Clone
+git clone git@github.com:ywsrock/workstation-diary.git ~/workstation-diary
+
+# 2. Load the wd function in your shell (~/.zshrc or ~/.bashrc)
+echo 'source ~/workstation-diary/sh/wd.sh' >> ~/.zshrc
+
+# 3. Reload and write your first note
+source ~/.zshrc
+wd add "Hello WD" first
 ```
 
-If not set, WD will use `$HOME/notes` as the default directory.
+Notes are stored in `~/notes` by default (created automatically).
 
-### Dependencies
+> [!TIP]
+> For the best experience, install the optional tools:
+> ```bash
+> brew install fzf bat rclone   # macOS
+> ```
 
-- Bash or Zsh shell
-- Standard Unix utilities (find, grep, sed, etc.)
-- (Optional) fzf for enhanced file selection
-- (Optional) bat for improved file previews
+## 📝 What a Note Looks Like
 
+`wd add "Fix login bug" work urgent` creates a uniquely named file:
+
+```
+~/notes/20261028_142305_a1b2c3d4_Fix login bug.md
+        └─date─┘ └time┘ └random┘ └──title───┘
+```
+
+with this front matter, then opens it in your editor (`nvim` → `vim` → `nano`, whichever is found first):
+
+```markdown
+---
+title: Fix login bug
+date: 20261028
+tags: work urgent
+---
+
+```
+
+Because the date and time lead the filename, notes sort chronologically in any file browser.
+
+## 🧭 Commands
+
+| Command | What it does |
+| --- | --- |
+| `wd add <name> [tags...]` | Create a new note with front matter and open it |
+| `wd open [name]` | Open a note — pick interactively if no name given |
+| `wd list [keyword]` | List notes (optionally filtered by content) and open one |
+| `wd recent [count]` | Pick from the most recently modified notes (default: 5) |
+| `wd preview [name]` | Show the first 50 lines of a note |
+| `wd search <regex>` | Regex search across all notes (fzf picker if installed) |
+| `wd grep <keyword> [-f]` | Case-insensitive keyword search; `-f` for fzf |
+| `wd tag [name]` | View or edit a note's tags |
+| `wd tag search <tag>` | Find notes with a given tag |
+| `wd delete [name]` | Delete a note (asks for confirmation) |
+| `wd sync <gdrive\|s3>` | Back up notes with rclone (no remote deletions) |
+| `wd config` | Show the current notes directory |
+| `wd help [command]` | Show help (or details for one command) |
+
+> `[name]` matches case-insensitively against the file path, so a partial title like `wd open login` is enough.
+
+<details>
+<summary><b>📖 Command details & examples</b></summary>
+
+### `add`
+```bash
+wd add "Meeting notes" work meeting
+```
+Creates a note titled "Meeting notes" tagged `work meeting`.
+
+### `open` / `preview` / `delete`
+```bash
+wd open "Meeting"     # open by partial name
+wd open               # interactive picker
+wd preview Meeting    # first 50 lines (bat-highlighted if available)
+wd delete "Old note"  # asks y/n before removing
+```
+
+### `list`
+```bash
+wd list            # all notes
+wd list project    # only notes whose content contains "project"
+```
+
+### `recent`
+```bash
+wd recent       # last 5
+wd recent 10    # last 10
+```
+
+### `search` vs `grep`
+```bash
+wd search "TODO.*urgent"   # regex, case-sensitive, fzf automatically if installed
+wd grep important          # case-insensitive, colored output
+wd grep important -f       # same, but in fzf with preview at the matching line
+```
+
+### `tag`
+```bash
+wd tag "Meeting"      # shows current tags, prompts for new ones
+wd tag search work    # list every note tagged "work"
+```
+
+</details>
+
+## ☁️ Cloud Backup with rclone
+
+`wd sync` runs `rclone copy --update`, which **uploads new and changed notes only** and never deletes files on the remote. It is a one-way backup from this machine.
+
+| Target | Required rclone remote name | Destination |
+| --- | --- | --- |
+| Google Drive | `gdrive` | `gdrive:WDNotes` |
+| AWS S3 | `s3` | `s3:$WD_S3_BUCKET/notes` |
+
+```bash
+# One-time setup: create a remote named "gdrive" (or "s3")
+rclone config
+
+# Google Drive
+wd sync gdrive
+
+# AWS S3
+export WD_S3_BUCKET="my-bucket"
+wd sync s3
+```
+
+## ⚙️ Configuration
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `WD_NOTES_DIR` | `$HOME/notes` | Where notes are stored |
+| `WD_S3_BUCKET` | — | S3 bucket used by `wd sync s3` |
+
+```bash
+# ~/.zshrc
+export WD_NOTES_DIR="$HOME/Dropbox/notes"
+export WD_S3_BUCKET="my-bucket"
+source ~/workstation-diary/sh/wd.sh
+```
+
+## 📦 Requirements
+
+| Tool | Required? | Used for |
+| --- | --- | --- |
+| Bash or Zsh | ✅ | Running `wd` |
+| `find`, `grep`, `sed` | ✅ | Listing and searching |
+| `openssl` | ✅ | Unique filename generation |
+| `nvim` / `vim` / `nano` | ✅ (any one) | Editing notes |
+| [fzf](https://github.com/junegunn/fzf) | Optional | Interactive fuzzy selection |
+| [bat](https://github.com/sharkdp/bat) | Optional | Syntax-highlighted previews |
+| [rclone](https://rclone.org/) | Optional | `wd sync` |
+
+## 💡 Tips
+
+- **Daily log:** `alias today='wd add "daily-$(date +%F)" daily'`
+- **Version your notes:** run `git init` inside `$WD_NOTES_DIR` for full history.
+- **Shared folder:** point `WD_NOTES_DIR` at a Dropbox/iCloud folder for live multi-device access.
+
+## 📄 License
+
+[MIT](LICENSE) © ywsrock

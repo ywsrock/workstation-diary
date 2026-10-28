@@ -7,6 +7,14 @@ wd() {
     local timestamp=$(date +%H%M%S)
     local editor=$(command -v nvim || command -v vim || echo "nano")
 
+    # fzf preview commands (fall back to head/tail when bat is not installed)
+    local file_preview="head -n 50 {}"
+    local line_preview="tail -n +{2} {1} | head -n 50"
+    if command -v bat &> /dev/null; then
+        file_preview="bat --style=numbers --color=always --line-range :50 {}"
+        line_preview="bat --style=numbers --color=always --line-range {2}: {1}"
+    fi
+
     # Create notes directory if it doesn't exist
     mkdir -p "$notes_dir"
 
@@ -31,34 +39,55 @@ wd() {
         fi
     }
 
+    # Function to print notes (one path per line on stdin) with their first line
+    print_notes() {
+        local file
+        while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            echo -e "\033[1m$file:\033[0m"
+            head -n 1 "$file"
+            echo
+        done
+    }
+
     # Function to select a file using fzf or select
+    # Files are passed as a single newline-separated string so paths may contain spaces
     select_file() {
         local prompt="$1"
-        shift
-        local files=("$@")
+        local list="$2"
+        if [ -z "$list" ]; then
+            echo "No files found." >&2
+            return 1
+        fi
         if command -v fzf &> /dev/null; then
-            printf '%s\n' "${files[@]}" | fzf --prompt="$prompt" --preview 'bat --style=numbers --color=always --line-range :50 {}'
+            printf '%s\n' "$list" | fzf --prompt="$prompt" --preview "$file_preview"
         else
-            if [ ${#files[@]} -eq 0 ]; then
-                echo "No files found."
-                return 1
-            fi
-            echo "$prompt"
+            local files=() line file
+            while IFS= read -r line; do
+                files+=("$line")
+            done <<< "$list"
+            echo "$prompt" >&2
             select file in "${files[@]}"; do
                 if [ -n "$file" ]; then
                     echo "$file"
                     return 0
                 else
-                    echo "Invalid selection. Please try again."
+                    echo "Invalid selection. Please try again." >&2
                 fi
             done
         fi
     }
 
-    # Function to find a file by name (with fuzzy matching)
+    # Function to find a file by name (case-insensitive partial match on the file name)
+    # Prompts for a choice when several notes match
     find_file() {
         local name="$1"
-        find "$notes_dir" -name "*.md" | grep -i "$name"
+        local matches=$(find "$notes_dir" -name "*.md" -type f -iname "*$name*")
+        if [ $(printf '%s\n' "$matches" | grep -c .) -gt 1 ]; then
+            select_file "Multiple notes match '$name':" "$matches"
+        else
+            echo "$matches"
+        fi
     }
 
     # Function to list notes and optionally select one
@@ -68,19 +97,15 @@ wd() {
         local files
 
         if [ -z "$filter" ]; then
-            files=($(find "$notes_dir" -name "*.md" -type f))
+            files=$(find "$notes_dir" -name "*.md" -type f)
         else
-            files=($(grep -il "$filter" "$notes_dir"/*.md))
+            files=$(find "$notes_dir" -name "*.md" -type f -exec grep -il -- "$filter" {} +)
         fi
 
         if [ "$select_mode" = "select" ]; then
-            select_file "Select a file to open:" "${files[@]}"
+            select_file "Select a file to open:" "$files"
         else
-            for file in "${files[@]}"; do
-                echo -e "\033[1m$file:\033[0m"
-                head -n 1 "$file"
-                echo
-            done
+            printf '%s\n' "$files" | print_notes
         fi
     }
 
@@ -88,27 +113,19 @@ wd() {
     list_recent_notes() {
         local count=${1:-5}
         local select_mode="$2"
-        local files=($(find "$notes_dir" -name "*.md" -type f -exec ls -t {} + | head -n $count))
+        local files=$(find "$notes_dir" -name "*.md" -type f -exec ls -t {} + | head -n "$count")
 
         if [ "$select_mode" = "select" ]; then
-            select_file "Select a file to open:" "${files[@]}"
+            select_file "Select a file to open:" "$files"
         else
-            for file in "${files[@]}"; do
-                echo -e "\033[1m$file:\033[0m"
-                head -n 1 "$file"
-                echo
-            done
+            printf '%s\n' "$files" | print_notes
         fi
     }
 
     # Function to search by tag
     search_by_tag() {
         local tag="$1"
-        grep -l "tags:.*$tag" "$notes_dir"/*.md | while read -r file; do
-            echo -e "\033[1m$file:\033[0m"
-            head -n 1 "$file"
-            echo
-        done
+        find "$notes_dir" -name "*.md" -type f -exec grep -l -- "^tags:.*$tag" {} + | print_notes
     }
 
     # Function to sync notes with a remote using rclone
@@ -152,7 +169,7 @@ wd() {
             ;;
         delete)
             if [ -z "$2" ]; then
-                local file_to_delete=$(select_file "Select a file to delete:" $(find "$notes_dir" -name "*.md"))
+                local file_to_delete=$(select_file "Select a file to delete:" "$(find "$notes_dir" -name "*.md" -type f)")
             else
                 local file_to_delete=$(find_file "$2")
             fi
@@ -164,7 +181,7 @@ wd() {
             ;;
         open)
             if [ -z "$2" ]; then
-                local file_to_open=$(select_file "Select a file to open:" $(find "$notes_dir" -name "*.md"))
+                local file_to_open=$(select_file "Select a file to open:" "$(find "$notes_dir" -name "*.md" -type f)")
             else
                 local file_to_open=$(find_file "$2")
             fi
@@ -180,7 +197,7 @@ wd() {
                 return 1
             fi
             if command -v fzf &> /dev/null; then
-                grep -r -n "$2" "$notes_dir" | fzf --delimiter : --preview 'bat --style=numbers --color=always --line-range {2}: {1}'
+                grep -r -n "$2" "$notes_dir" | fzf --delimiter : --preview "$line_preview"
             else
                 grep -r -n "$2" "$notes_dir"
             fi
@@ -197,14 +214,14 @@ wd() {
             fi
             
             if $use_fzf; then
-                grep -r -n -i "$keyword" "$notes_dir" | fzf --delimiter : --preview 'bat --style=numbers --color=always --line-range {2}: {1}'
+                grep -r -n -i "$keyword" "$notes_dir" | fzf --delimiter : --preview "$line_preview"
             else
                 grep -r -n -i --color=always "$keyword" "$notes_dir"
             fi
             ;;
         preview)
             if [ -z "$2" ]; then
-                local file_to_preview=$(select_file "Select a file to preview:" $(find "$notes_dir" -name "*.md"))
+                local file_to_preview=$(select_file "Select a file to preview:" "$(find "$notes_dir" -name "*.md" -type f)")
             else
                 local file_to_preview=$(find_file "$2")
             fi
@@ -225,8 +242,9 @@ wd() {
                     return 1
                 fi
                 search_by_tag "$3"
+                return 0
             elif [ -z "$2" ]; then
-                local file_to_tag=$(select_file "Select a file to view/edit tags:" $(find "$notes_dir" -name "*.md"))
+                local file_to_tag=$(select_file "Select a file to view/edit tags:" "$(find "$notes_dir" -name "*.md" -type f)")
             else
                 local file_to_tag=$(find_file "$2")
             fi
@@ -236,7 +254,8 @@ wd() {
                 echo "Enter new tags (or press Enter to keep current tags):"
                 read -r new_tags
                 if [ -n "$new_tags" ]; then
-                    sed -i "s/^tags:.*$/tags: $new_tags/" "$file_to_tag"
+                    # -i.bak works with both GNU sed and BSD sed (macOS)
+                    sed -i.bak "s/^tags:.*$/tags: $new_tags/" "$file_to_tag" && rm -f "$file_to_tag.bak"
                     echo "Tags updated for $file_to_tag"
                 else
                     echo "Tags unchanged."
@@ -279,6 +298,37 @@ wd() {
             echo "For example: export WD_NOTES_DIR=/path/to/your/notes"
             ;;
         help)
+            if [ -n "$2" ]; then
+                case "$2" in
+                    add)     echo "Usage: wd add <note_name> [tags]"
+                             echo "Create a new note with front matter (title, date, tags) and open it in the editor." ;;
+                    list)    echo "Usage: wd list [keyword]"
+                             echo "List all notes, or only notes containing keyword, then select one to open." ;;
+                    delete)  echo "Usage: wd delete [note_name]"
+                             echo "Delete a note after confirmation. Select interactively if no name is given." ;;
+                    open)    echo "Usage: wd open [note_name]"
+                             echo "Open a note in the editor. Select interactively if no name is given." ;;
+                    search)  echo "Usage: wd search <regex_pattern>"
+                             echo "Search all notes with a regex (uses fzf if installed)." ;;
+                    grep)    echo "Usage: wd grep <keyword> [-f]"
+                             echo "Case-insensitive search in all notes. Use -f to select results with fzf." ;;
+                    preview) echo "Usage: wd preview [note_name]"
+                             echo "Show the first 50 lines of a note. Select interactively if no name is given." ;;
+                    tag)     echo "Usage: wd tag [note_name]"
+                             echo "       wd tag search <tag_name>"
+                             echo "View or edit a note's tags, or search notes by tag." ;;
+                    recent)  echo "Usage: wd recent [count]"
+                             echo "Select from the most recently modified notes (default: 5)." ;;
+                    sync)    echo "Usage: wd sync [gdrive|s3]"
+                             echo "Upload new or updated notes with rclone (no deletions on the remote)."
+                             echo "gdrive -> gdrive:WDNotes, s3 -> s3:\$WD_S3_BUCKET/notes" ;;
+                    config)  echo "Usage: wd config"
+                             echo "Show the current notes directory." ;;
+                    *)       echo "Unknown command: $2. Use 'wd help' for a list of commands."
+                             return 1 ;;
+                esac
+                return 0
+            fi
             echo "Usage: wd <command> [args]"
             echo "Commands:"
             echo "  add <note_name> [tags] - Add a new note"
